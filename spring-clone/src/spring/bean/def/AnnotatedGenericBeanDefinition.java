@@ -10,7 +10,7 @@ public class AnnotatedGenericBeanDefinition implements AnnotatedBeanDefinition{
 
     private String[] dependsOn;
 
-    private AnnotatedGenericBeanDefinition(String beanName, Class<?> beanClass, Scope scope, AnnotationMetadata annotationMetadata) {
+    private AnnotatedGenericBeanDefinition(String beanName, Class<?> beanClass, Scope scope, AnnotationMetadata annotationMetadata, ConstructorArgumentValues constructorArgumentValues) {
         this.beanName = requireBeanName(beanName);
         this.beanClass = requireBeanClass(beanClass);
         this.scope = requireScope(scope);
@@ -30,17 +30,6 @@ public class AnnotatedGenericBeanDefinition implements AnnotatedBeanDefinition{
     @Override
     public Scope getScope() {
         return scope;
-    }
-
-    @Override
-    public String[] getDependsOn() {
-        return dependsOn.clone();
-    }
-
-    @Override
-    public void setDependsOn(String[] dependsOn) {
-        if(dependsOn == null) throw new IllegalArgumentException("dependsOn은 null일 수 없습니다.");
-        this.dependsOn = dependsOn;
     }
 
     @Override
@@ -68,7 +57,7 @@ public class AnnotatedGenericBeanDefinition implements AnnotatedBeanDefinition{
         return annotationMetadata;
     }
 
-    public static AnnotatedGenericBeanDefinition of(String beanName, Class<?> beanClass, Scope scope, AnnotationMetadata annotationMetadata) {
-        return new AnnotatedGenericBeanDefinition(beanName, beanClass, scope, annotationMetadata);
+    public static AnnotatedGenericBeanDefinition of(String beanName, Class<?> beanClass, Scope scope, AnnotationMetadata annotationMetadata, ConstructorArgumentValues constructorArgumentValues) {
+        return new AnnotatedGenericBeanDefinition(beanName, beanClass, scope, annotationMetadata, constructorArgumentValues);
     }
 }

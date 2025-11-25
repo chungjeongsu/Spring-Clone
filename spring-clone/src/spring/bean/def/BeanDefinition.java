@@ -8,8 +8,4 @@ public interface BeanDefinition {
     Class<?> getBeanClass();
 
     Scope getScope();
-
-    String[] getDependsOn();
-
-    void setDependsOn(String[] dependsOn);
 }
