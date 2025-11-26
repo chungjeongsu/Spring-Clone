@@ -1,14 +1,14 @@
 package spring.bean.bean;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Parameter;
+import java.lang.reflect.TypeVariable;
 import spring.annotation.Autowired;
 import spring.bean.def.BeanDefinition;
-import spring.bean.def.ConstructorArgumentValues;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 public class DefaultBeanFactory implements ConfigurableBeanFactory, SingletonBeanRegistry {
     private final Map<String, BeanDefinition> beanDefinitions = new ConcurrentHashMap<>(256);
@@ -47,18 +47,23 @@ public class DefaultBeanFactory implements ConfigurableBeanFactory, SingletonBea
     //BeanFactory : 기본적인 BeanFactory
     //----------------------------
     @Override
-    public Object getBean(String name) {
-
+    public Object getBean(String name)
+        throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        if(singletonBeans.containsKey(name)) return singletonBeans.get(name);
+        if(!beanDefinitions.containsKey(name)) throw new IllegalArgumentException();
+        return createBean(name, beanDefinitions.get(name), null);
     }
 
     @Override
-    public <T> T getBean(String name, Class<T> requiredType) {
-        return null;
+    public <T> T getBean(String name, Class<T> requiredType)
+        throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        return requiredType.cast(getBean(name));
     }
 
     @Override
-    public <T> T getBean(Class<T> requiredType) {
-        return null;
+    public <T> T getBean(Class<T> requiredType)
+        throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        return getBean(requiredType.getName(), requiredType);
     }
 
     @Override
@@ -89,34 +94,58 @@ public class DefaultBeanFactory implements ConfigurableBeanFactory, SingletonBea
      * 6. 최종 빈 return
      */
     @Override
-    public <T> T createBean(String beanName, BeanDefinition beanDefinition, Set<?> alreadyBean) throws NoSuchMethodException {
+    public Object createBean(String beanName, BeanDefinition beanDefinition, Set<?> alreadyBean)
+        throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         Class<?> objectClass = beanDefinition.getBeanClass();
-
+        if(singletonBeans.containsKey(beanName)) throw new IllegalAccessException();
         Object beanInstance = createBeanInstance(objectClass, beanDefinition);
-
+        //Todo : 초기화 이전 ~ 초기화 이후 로직
+        return beanInstance;
     }
 
-    private Object createBeanInstance(Class<?> objectClass, BeanDefinition beanDefinition) throws NoSuchMethodException {
-        Constructor<?>[] constructors = objectClass.getDeclaredConstructors();
-        Constructor<?> autowirableConstructor = selectAutowirableConstructor(constructors);
+    private Object createBeanInstance(Class<?> objectClass, BeanDefinition beanDefinition)
+        throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        Constructor<?> autowirableConstructor = selectAutowirableConstructor(objectClass.getDeclaredConstructors());
+        Object[] parameterValues = resolveParameterValues(autowirableConstructor);
+        return autowirableConstructor.newInstance(parameterValues);
+    }
 
-        return autowirableConstructor.newInstance();
+    private Object[] resolveParameterValues(Constructor<?> autowirableConstructor)
+        throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        Class<?>[] parameterTypes = autowirableConstructor.getParameterTypes();
+        int parameterCount = autowirableConstructor.getParameterCount();
+        Object[] parameterValues = new Object[parameterCount];
+        for(int i = 0; i < parameterCount; i++) {
+            parameterValues[i] = getBean(parameterTypes[i]);
+        }
+        return parameterValues;
     }
 
     private Constructor<?> selectAutowirableConstructor(Constructor<?>[] constructors) {
         Constructor<?> autowirableConstructor = null;
-        if(constructors.length == 1) autowirableConstructor = constructors[0];
+
+        if(constructors.length == 1) autowirableConstructor = constructors[0];  //생성자가 1개만 존재하는 경우
+        parseAutowiredConstructor(constructors, autowirableConstructor);        //생성자가 1개가 아닌 경우 Autowired 붙은 생성자 파싱
+        parseNoArgsConstructor(constructors, autowirableConstructor);           //생성자가 1개가 아닌 경우 기본 생성자가 있으면 파싱
+        if(autowirableConstructor == null) throw new IllegalArgumentException();//생성자 1개가 아니고, 기본 생성자도 없고, Autowired도 없을 시 예외
+
+        return autowirableConstructor;
+    }
+
+    private void parseNoArgsConstructor(Constructor<?>[] constructors,
+        Constructor<?> autowirableConstructor) {
+        Optional<Constructor<?>> noArgsConstructor = Arrays.stream(constructors)
+                .filter(constructor -> constructor.getParameterCount() == 0)
+                .findFirst();
+        if(autowirableConstructor == null && noArgsConstructor.isPresent()) autowirableConstructor = noArgsConstructor.get();
+    }
+
+    private void parseAutowiredConstructor(Constructor<?>[] constructors,
+        Constructor<?> autowirableConstructor) {
         List<Constructor<?>> autowiredConstructors = Arrays.stream(constructors)
                 .filter(c -> c.isAnnotationPresent(Autowired.class))
                 .toList();
         if(autowiredConstructors.size() > 1) throw new IllegalArgumentException();
         if(autowiredConstructors.size() == 1) autowirableConstructor = autowiredConstructors.getFirst();
-        Optional<Constructor<?>> noArgsConstructor = Arrays.stream(constructors)
-                .filter(constructor -> constructor.getParameterCount() == 0)
-                .findFirst();
-        if(autowirableConstructor == null && noArgsConstructor.isPresent()) autowirableConstructor = noArgsConstructor.get();
-
-        if(autowirableConstructor == null) throw new IllegalArgumentException();
-        return autowirableConstructor;
     }
 }
