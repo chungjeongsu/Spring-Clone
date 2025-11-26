@@ -1,8 +1,7 @@
 package spring.bean.bean;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.TypeVariable;
+
 import spring.annotation.Autowired;
 import spring.bean.def.BeanDefinition;
 
@@ -13,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DefaultBeanFactory implements ConfigurableBeanFactory, SingletonBeanRegistry {
     private final Map<String, BeanDefinition> beanDefinitions = new ConcurrentHashMap<>(256);
     private final Map<String, Object> singletonBeans = new ConcurrentHashMap<>(256);
+    private final Set<String> singletonsCurrentlyCreation = ConcurrentHashMap.newKeySet(16);
 
     //-------------------------
     //ConfigurableBeanFactory : 빈을 생성하기 위한 기본 설정
@@ -51,7 +51,7 @@ public class DefaultBeanFactory implements ConfigurableBeanFactory, SingletonBea
         throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         if(singletonBeans.containsKey(name)) return singletonBeans.get(name);
         if(!beanDefinitions.containsKey(name)) throw new IllegalArgumentException();
-        return createBean(name, beanDefinitions.get(name), null);
+        return createBean(name, beanDefinitions.get(name));
     }
 
     @Override
@@ -68,7 +68,7 @@ public class DefaultBeanFactory implements ConfigurableBeanFactory, SingletonBea
 
     @Override
     public boolean containsBean(String name) {
-        return false;
+        return this.singletonBeans.containsKey(name);
     }
 
     @Override
@@ -94,12 +94,16 @@ public class DefaultBeanFactory implements ConfigurableBeanFactory, SingletonBea
      * 6. 최종 빈 return
      */
     @Override
-    public Object createBean(String beanName, BeanDefinition beanDefinition, Set<?> alreadyBean)
+    public Object createBean(String beanName, BeanDefinition beanDefinition)
         throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        beforeSingletonCreation(beanName);
+
         Class<?> objectClass = beanDefinition.getBeanClass();
-        if(singletonBeans.containsKey(beanName)) throw new IllegalAccessException();
+        if(containsBean(beanName)) throw new IllegalAccessException();
         Object beanInstance = createBeanInstance(objectClass, beanDefinition);
         //Todo : 초기화 이전 ~ 초기화 이후 로직
+
+        afterSingletonCreation(beanName);
         return beanInstance;
     }
 
@@ -147,5 +151,21 @@ public class DefaultBeanFactory implements ConfigurableBeanFactory, SingletonBea
                 .toList();
         if(autowiredConstructors.size() > 1) throw new IllegalArgumentException();
         if(autowiredConstructors.size() == 1) autowirableConstructor = autowiredConstructors.getFirst();
+    }
+
+    private void beforeSingletonCreation(String beanName) {
+        if(!this.singletonsCurrentlyCreation.contains(beanName)) {
+            singletonsCurrentlyCreation.add(beanName);
+            return;
+        }
+        throw new IllegalArgumentException();
+    }
+
+    private void afterSingletonCreation(String beanName) {
+        if(this.singletonsCurrentlyCreation.contains(beanName)) {
+            singletonsCurrentlyCreation.remove(beanName);
+            return;
+        }
+        throw new IllegalArgumentException();
     }
 }
