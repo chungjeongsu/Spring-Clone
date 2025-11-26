@@ -100,14 +100,14 @@ public class DefaultBeanFactory implements ConfigurableBeanFactory, SingletonBea
 
         Class<?> objectClass = beanDefinition.getBeanClass();
         if(containsBean(beanName)) throw new IllegalAccessException();
-        Object beanInstance = createBeanInstance(objectClass, beanDefinition);
-        //Todo : 초기화 이전 ~ 초기화 이후 로직
+        Object beanInstance = createBeanInstance(objectClass);
+        //Todo : 초기화 이전 ~ 초기화 이후 로직 일단 기본 빈 생성까지만 구현 후 리팩토링 하며 추가 예정
 
         afterSingletonCreation(beanName);
         return beanInstance;
     }
 
-    private Object createBeanInstance(Class<?> objectClass, BeanDefinition beanDefinition)
+    private Object createBeanInstance(Class<?> objectClass)
         throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         Constructor<?> autowirableConstructor = selectAutowirableConstructor(objectClass.getDeclaredConstructors());
         Object[] parameterValues = resolveParameterValues(autowirableConstructor);
