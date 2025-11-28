@@ -10,7 +10,7 @@ public class AnnotatedGenericBeanDefinition implements AnnotatedBeanDefinition{
 
     private String[] dependsOn;
 
-    private AnnotatedGenericBeanDefinition(String beanName, Class<?> beanClass, Scope scope, AnnotationMetadata annotationMetadata, ConstructorArgumentValues constructorArgumentValues) {
+    private AnnotatedGenericBeanDefinition(String beanName, Class<?> beanClass, Scope scope, AnnotationMetadata annotationMetadata) {
         this.beanName = requireBeanName(beanName);
         this.beanClass = requireBeanClass(beanClass);
         this.scope = requireScope(scope);
@@ -57,7 +57,7 @@ public class AnnotatedGenericBeanDefinition implements AnnotatedBeanDefinition{
         return annotationMetadata;
     }
 
-    public static AnnotatedGenericBeanDefinition of(String beanName, Class<?> beanClass, Scope scope, AnnotationMetadata annotationMetadata, ConstructorArgumentValues constructorArgumentValues) {
-        return new AnnotatedGenericBeanDefinition(beanName, beanClass, scope, annotationMetadata, constructorArgumentValues);
+    public static AnnotatedGenericBeanDefinition of(String beanName, Class<?> beanClass, Scope scope, AnnotationMetadata annotationMetadata) {
+        return new AnnotatedGenericBeanDefinition(beanName, beanClass, scope, annotationMetadata);
     }
 }
