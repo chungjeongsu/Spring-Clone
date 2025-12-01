@@ -5,10 +5,10 @@ import spring.bean.def.GenericBeanDefinitionRegistry;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.*;
 import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 public class ClassPathBeanDefinitionScanner {
     private final GenericBeanDefinitionRegistry genericBeanDefinitionRegistry;
@@ -28,6 +28,7 @@ public class ClassPathBeanDefinitionScanner {
 
         for(String basePackage : basePackages) {
             Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
+
         }
     }
 
@@ -52,7 +53,8 @@ public class ClassPathBeanDefinitionScanner {
             return;
         }
         if(url.getProtocol().equals("jar")) {   //배포 jar일 시
-            doScanJar(url.toURI(), basePackage, beanDefinitions);
+            JarURLConnection jarURLConnection = (JarURLConnection) url.openConnection();
+            doScanJar(jarURLConnection, beanDefinitions);
         }
     }
 
@@ -87,7 +89,22 @@ public class ClassPathBeanDefinitionScanner {
         }
     }
 
-    private void doScanJar(URI uri, String currPackage, Set<BeanDefinition> beanDefinitions) {
+    private void doScanJar(JarURLConnection jarURLConnection, Set<BeanDefinition> beanDefinitions) {
+        JarFile jarFile = jarURLConnection.getJarFile();
 
+        Enumeration<JarEntry> entries = jarFile.entries();
+        while(entries.hasMoreElements()) {
+            JarEntry entry = entries.nextElement();
+            String name = entry.getName();
+
+            if(entry.isDirectory()) continue;
+            if(!name.endsWith(".class") || name.contains("$")) continue;
+
+            String className = name.substring(0, name.length() - 6).replace('/','.');
+
+            Class<?> clazz = classLoader.loadClass(className);
+            BeanDefinition parsedBeanDefinition = beanDefinitionParser.parse(clazz);
+            if(parsedBeanDefinition != null) beanDefinitions.add(parsedBeanDefinition);
+        }
     }
 }
