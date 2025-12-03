@@ -9,6 +9,7 @@ import java.net.*;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import spring.bean.def.scan.exception.BeanDefinitionScanException;
 
 public class ClassPathBeanDefinitionScanner {
     private final GenericBeanDefinitionRegistry genericBeanDefinitionRegistry;
@@ -32,79 +33,96 @@ public class ClassPathBeanDefinitionScanner {
         }
     }
 
-    private Set<BeanDefinition> findCandidateComponents(String basePackage) throws URISyntaxException, IOException {
+    //Scan을 위한 기본 세팅
+    private Set<BeanDefinition> findCandidateComponents(String basePackage) {
         Set<BeanDefinition> beanDefinitions = new LinkedHashSet<>();
 
         String basePackagePath = basePackage.replace('.', '/');
 
-        Enumeration<URL> resources = classLoader.getResources(basePackagePath);
+        try{
+            Enumeration<URL> resources = classLoader.getResources(basePackagePath);
 
-        while(resources.hasMoreElements()) {
-            URL url = resources.nextElement();
-            doScan(url, basePackage, beanDefinitions);
-        }
+            while(resources.hasMoreElements()) {
+                URL url = resources.nextElement();
+                doScan(url, basePackage, beanDefinitions);
+            }
 
-        return beanDefinitions;
-    }
-
-    private void doScan(URL url, String basePackage, Set<BeanDefinition> beanDefinitions) throws URISyntaxException {
-        if (url.getProtocol().equals("file")) {  //파일 시스템 파일 일 시
-            doScanFile(url.toURI(), basePackage, beanDefinitions);
-            return;
-        }
-        if(url.getProtocol().equals("jar")) {   //배포 jar일 시
-            JarURLConnection jarURLConnection = (JarURLConnection) url.openConnection();
-            doScanJar(jarURLConnection, beanDefinitions);
+            return beanDefinitions;
+        } catch (IOException e) {
+            throw new BeanDefinitionScanException("basePackage 리소스 로딩 중 예외가 발생했습니다.", e);
         }
     }
 
+    //Scan 방식에 따른 세부 세팅
+    private void doScan(URL url, String basePackage, Set<BeanDefinition> beanDefinitions) {
+        try{
+            if (url.getProtocol().equals("file")) {  //파일 시스템 파일 일 시
+                doScanFile(url.toURI(), basePackage, beanDefinitions);
+                return;
+            }
+            if(url.getProtocol().equals("jar")) {   //배포 jar일 시
+                JarURLConnection jarURLConnection = (JarURLConnection) url.openConnection();
+                doScanJar(jarURLConnection, basePackage, beanDefinitions);
+            }
+        } catch (URISyntaxException | IOException e) {
+            throw new BeanDefinitionScanException("scan 준비 중 예외가 발생했습니다.", e);
+        }
+    }
+
+    //파일 스캔
     private void doScanFile(URI uri, String currPackage, Set<BeanDefinition> beanDefinitions) {
         File file = new File(uri);
         File[] files = file.listFiles();
 
-        if(files == null) throw new RuntimeException();
+        if(!file.isDirectory()) return;
+        if(files == null) throw new BeanDefinitionScanException("파일 시스템 파일 스캔 중 예외가 발생했습니다.");
 
-        if(files.length >= 1) {
-            for(File child : files) {
-                if(child.isDirectory()) {
+        for(File child : files) {
+            if(child.isDirectory()) {
                     String subPackage = currPackage + "." + child.getName();
                     doScanFile(child.toURI(), subPackage, beanDefinitions);
                     continue;
                 }
 
-                if(!child.getName().endsWith(".class") || child.getName().contains("$")) continue;
+            if(!child.getName().endsWith(".class") || child.getName().contains("$")) continue;
 
-                String childSimpleName = child.getName().substring(0, child.getName().length() - 6);
-                String className = currPackage + "." + childSimpleName;
+            String childSimpleName = child.getName().substring(0, child.getName().length() - 6);
+            String className = currPackage + "." + childSimpleName;
 
-                try{
-                    Class<?> clazz = classLoader.loadClass(className);
+            try {
+                Class<?> clazz = classLoader.loadClass(className);
 
-                    BeanDefinition parsedBeanDefinition = beanDefinitionParser.parse(clazz);
-                    if(parsedBeanDefinition != null) beanDefinitions.add(parsedBeanDefinition);
-                } catch (ClassNotFoundException e) {
-                    throw new RuntimeException(e);
-                }
+                BeanDefinition parsedBeanDefinition = beanDefinitionParser.parse(clazz);
+                if (parsedBeanDefinition != null)
+                    beanDefinitions.add(parsedBeanDefinition);
+            } catch (ClassNotFoundException e) {
+                throw new BeanDefinitionScanException("파일 시스템 파일 스캔 중 예외가 발생했습니다.", e);
             }
         }
     }
 
-    private void doScanJar(JarURLConnection jarURLConnection, Set<BeanDefinition> beanDefinitions) {
-        JarFile jarFile = jarURLConnection.getJarFile();
+    //jar 파일 스캔
+    private void doScanJar(JarURLConnection jarURLConnection, String basePackage, Set<BeanDefinition> beanDefinitions) {
+        try(JarFile jarFile = jarURLConnection.getJarFile()){
+            Enumeration<JarEntry> entries = jarFile.entries();
+            while(entries.hasMoreElements()) {
+                JarEntry entry = entries.nextElement();
+                String name = entry.getName();
 
-        Enumeration<JarEntry> entries = jarFile.entries();
-        while(entries.hasMoreElements()) {
-            JarEntry entry = entries.nextElement();
-            String name = entry.getName();
+                if (entry.isDirectory())
+                    continue;
+                if (!name.endsWith(".class") || name.contains("$"))
+                    continue;
+                if (!name.startsWith(basePackage))
+                    continue;
 
-            if(entry.isDirectory()) continue;
-            if(!name.endsWith(".class") || name.contains("$")) continue;
-
-            String className = name.substring(0, name.length() - 6).replace('/','.');
-
-            Class<?> clazz = classLoader.loadClass(className);
-            BeanDefinition parsedBeanDefinition = beanDefinitionParser.parse(clazz);
-            if(parsedBeanDefinition != null) beanDefinitions.add(parsedBeanDefinition);
+                String className = name.substring(0, name.length() - 6).replace('/', '.');
+                Class<?> clazz = classLoader.loadClass(className);
+                BeanDefinition parsedBeanDefinition = beanDefinitionParser.parse(clazz);
+                if (parsedBeanDefinition != null) beanDefinitions.add(parsedBeanDefinition);
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            throw new BeanDefinitionScanException("jar 파일 스캔 중 예외가 발생했습니다.", e);
         }
     }
 }
