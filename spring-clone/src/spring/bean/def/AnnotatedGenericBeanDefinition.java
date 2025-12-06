@@ -2,19 +2,15 @@ package spring.bean.def;
 
 import spring.bean.scope.Scope;
 
-public class AnnotatedGenericBeanDefinition implements AnnotatedBeanDefinition{
+public class AnnotatedGenericBeanDefinition implements BeanDefinition {
     private String beanName;
     private Class<?> beanClass;
     private Scope scope;
-    private AnnotationMetadata annotationMetadata;
 
-    private String[] dependsOn;
-
-    private AnnotatedGenericBeanDefinition(String beanName, Class<?> beanClass, Scope scope, AnnotationMetadata annotationMetadata) {
-        this.beanName = requireBeanName(beanName);
-        this.beanClass = requireBeanClass(beanClass);
-        this.scope = requireScope(scope);
-        this.annotationMetadata = requireAnnotationMetadata(annotationMetadata);
+    public AnnotatedGenericBeanDefinition(String beanName, Class<?> beanClass, Scope scope) {
+        this.beanName = beanName;
+        this.beanClass = beanClass;
+        this.scope = scope;
     }
 
     @Override
@@ -33,31 +29,10 @@ public class AnnotatedGenericBeanDefinition implements AnnotatedBeanDefinition{
     }
 
     @Override
-    public AnnotationMetadata getMetaData() {
-        return annotationMetadata;
-    }
-
-    private String requireBeanName(String beanName) {
-        if(beanName.isEmpty()) throw new IllegalArgumentException("빈 이름은 null일 수 없음");
-        return beanName;
-    }
-
-    private Class<?> requireBeanClass(Class<?> beanClass) {
-        if(beanClass == null) throw new IllegalArgumentException("beanClass는 null일 수 없음");
-        return beanClass;
-    }
-
-    private Scope requireScope(Scope scope) {
-        if(scope == null) throw new IllegalArgumentException("scope는 null일 수 없음");
-        return scope;
-    }
-
-    private AnnotationMetadata requireAnnotationMetadata(AnnotationMetadata annotationMetadata) {
-        if(annotationMetadata == null) throw new IllegalArgumentException("annotationMetadata는 null일 수 없음");
-        return annotationMetadata;
-    }
-
-    public static AnnotatedGenericBeanDefinition of(String beanName, Class<?> beanClass, Scope scope, AnnotationMetadata annotationMetadata) {
-        return new AnnotatedGenericBeanDefinition(beanName, beanClass, scope, annotationMetadata);
+    public void setBeanName(String beanName) {
+        if(this.beanName != null) {
+            throw new IllegalArgumentException("");
+        }
+        this.beanName = beanName;
     }
 }

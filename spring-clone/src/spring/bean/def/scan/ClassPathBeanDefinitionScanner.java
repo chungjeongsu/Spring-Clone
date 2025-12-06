@@ -15,22 +15,30 @@ public class ClassPathBeanDefinitionScanner {
     private final GenericBeanDefinitionRegistry genericBeanDefinitionRegistry;
     private final BeanDefinitionParser beanDefinitionParser;
     private final ClassLoader classLoader;
+    private final AnnotationBeanNameGenerator annotationBeanNameGenerator;
 
-    private BeanNameGenerator beanNameGenerator;
-
-    public ClassPathBeanDefinitionScanner(GenericBeanDefinitionRegistry genericBeanDefinitionRegistry, BeanDefinitionParser beanDefinitionParser) {
+    public ClassPathBeanDefinitionScanner(GenericBeanDefinitionRegistry genericBeanDefinitionRegistry, BeanDefinitionParser beanDefinitionParser,
+        AnnotationBeanNameGenerator annotationBeanNameGenerator) {
         this.genericBeanDefinitionRegistry = genericBeanDefinitionRegistry;
         this.beanDefinitionParser = beanDefinitionParser;
+        this.annotationBeanNameGenerator = annotationBeanNameGenerator;
         this.classLoader = Thread.currentThread().getContextClassLoader();
     }
 
-    public void scan(String... basePackages) {
+    public Map<String, BeanDefinition> scan(String... basePackages) {
         Map<String, BeanDefinition> beanDefinitions = new LinkedHashMap<>();
 
         for(String basePackage : basePackages) {
             Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
+            for(BeanDefinition candidate : candidates) {
+                String beanName = annotationBeanNameGenerator.generateBeanName(candidate,
+                    genericBeanDefinitionRegistry);
+                candidate.setBeanName(beanName);
 
+                genericBeanDefinitionRegistry.registerBeanDefinition(beanName, candidate);
+            }
         }
+        return beanDefinitions;
     }
 
     //Scan을 위한 기본 세팅

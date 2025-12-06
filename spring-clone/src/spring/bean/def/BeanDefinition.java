@@ -8,4 +8,6 @@ public interface BeanDefinition {
     Class<?> getBeanClass();
 
     Scope getScope();
+
+    void setBeanName(String beanName);
 }
