@@ -1,13 +1,13 @@
 package spring.bean.def;
 
-import spring.bean.scope.Scope;
+import spring.annotation.Scope.ScopeType;
 
 public interface BeanDefinition {
     String getBeanName();
 
     Class<?> getBeanClass();
 
-    Scope getScope();
+    ScopeType getScopeType();
 
     void setBeanName(String beanName);
 }

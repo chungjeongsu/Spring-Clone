@@ -1,14 +1,12 @@
 package spring.bean.def.scan;
 
-import spring.annotation.Component;
 import spring.bean.def.*;
-import spring.bean.scope.Scope;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
+import spring.annotation.Scope.ScopeType;
 
 public class BeanDefinitionParser {
     public BeanDefinition parse(Class<?> clazz) {
@@ -20,23 +18,22 @@ public class BeanDefinitionParser {
     }
 
     private AnnotationMetadata parseAnnotationMetadata(Class<?> clazz) {
+        MergedAnnotations mergedAnnotations = parseMergedAnnotations(clazz);
+
         return new AnnotationMetadata(
                 clazz.getName(),
-                parseScope(clazz),
+                parseScope(mergedAnnotations),
                 parseSuperClassName(clazz),
                 parseInterfaceNames(clazz),
-                parseMemberClassNames(clazz),
                 parseDeclaredMethods(clazz),
-                parseMergedAnnotations(clazz)
+                mergedAnnotations
         );
     }
 
-    private Scope parseScope(Class<?> clazz) {
-        Annotation[] declaredAnnotations = clazz.getDeclaredAnnotations();
-        if(declaredAnnotations.length == 0) return Scope.DEFAULT;
-        for(Annotation annotation : declaredAnnotations) {
-
-        }
+    private ScopeType parseScope(MergedAnnotations mergedAnnotations) {
+        if(!mergedAnnotations.hasAnnotation("Scope")) return ScopeType.DEFAULT;
+        MergedAnnotation scopeAnnotation = mergedAnnotations.getAnnotation("Scope");
+        return scopeAnnotation.getAttributeValue("value", ScopeType.class);
     }
 
     private String parseSuperClassName(Class<?> clazz) {
@@ -53,10 +50,6 @@ public class BeanDefinitionParser {
                 .collect(Collectors.toUnmodifiableSet());
     }
 
-    private Set<String> parseMemberClassNames(Class<?> clazz) {
-
-    }
-
     private Set<MethodMetadata> parseDeclaredMethods(Class<?> clazz) {
         Method[] declaredMethods = clazz.getDeclaredMethods();
         if(declaredMethods.length == 0) return null;
@@ -65,11 +58,18 @@ public class BeanDefinitionParser {
                 .collect(Collectors.toUnmodifiableSet());
     }
 
-    private MethodMetadata parseMethodMetaData(Method c) {
-
+    private MethodMetadata parseMethodMetaData(Method method) {
+        return new MethodMetadata(
+            method.getName(),
+            method.getDeclaringClass(),
+            method.getReturnType(),
+            parseMergedAnnotations(method)
+        );
     }
 
-    private MergedAnnotations parseMergedAnnotations(Class<?> clazz) {
-        return AnnotationUtil.parseMergedAnnotations(clazz.getDeclaredAnnotations());
+    private <T> MergedAnnotations parseMergedAnnotations(T target) {
+        if(target instanceof Class<?>) return AnnotationUtil.parseMergedAnnotations((Class<?>) target);
+        if(target instanceof Method) return AnnotationUtil.parseMergedAnnotations((Method) target);
+        throw new IllegalArgumentException();
     }
 }

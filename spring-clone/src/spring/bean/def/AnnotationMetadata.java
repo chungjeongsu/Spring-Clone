@@ -1,25 +1,22 @@
 package spring.bean.def;
 
-import spring.bean.scope.Scope;
-
 import java.util.Collections;
 import java.util.Set;
+import spring.annotation.Scope.ScopeType;
 
 public class AnnotationMetadata {
     private final String className;
-    private final Scope scope;
+    private final ScopeType scopeType;
     private final String superClassName;
     private final Set<String> interfaceNames;
-    private final Set<String> memberClassNames;
     private final Set<MethodMetadata> declaredMethods;
     private final MergedAnnotations mergedAnnotations;
 
-    public AnnotationMetadata(String className, Scope scope, String superClassName, Set<String> interfaceNames, Set<String> memberClassNames, Set<MethodMetadata> declaredMethods, MergedAnnotations mergedAnnotations) {
+    public AnnotationMetadata(String className, ScopeType scopeType, String superClassName, Set<String> interfaceNames, Set<MethodMetadata> declaredMethods, MergedAnnotations mergedAnnotations) {
         this.className = className;
-        this.scope = scope;
+        this.scopeType = scopeType;
         this.superClassName = superClassName;
         this.interfaceNames = interfaceNames;
-        this.memberClassNames = memberClassNames;
         this.declaredMethods = declaredMethods;
         this.mergedAnnotations = mergedAnnotations;
     }
@@ -40,7 +37,7 @@ public class AnnotationMetadata {
         return mergedAnnotations.hasAnnotation(annotationName);
     }
 
-    public Scope getScope() {
-        return scope;
+    public ScopeType getScopeType() {
+        return scopeType;
     }
 }

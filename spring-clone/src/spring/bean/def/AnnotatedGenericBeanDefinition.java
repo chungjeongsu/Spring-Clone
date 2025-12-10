@@ -1,6 +1,6 @@
 package spring.bean.def;
 
-import spring.bean.scope.Scope;
+import spring.annotation.Scope.ScopeType;
 
 public class AnnotatedGenericBeanDefinition implements BeanDefinition {
     private String beanName;
@@ -24,8 +24,8 @@ public class AnnotatedGenericBeanDefinition implements BeanDefinition {
     }
 
     @Override
-    public Scope getScope() {
-        return annotationMetadata.getScope();
+    public ScopeType getScopeType() {
+        return annotationMetadata.getScopeType();
     }
 
     @Override
