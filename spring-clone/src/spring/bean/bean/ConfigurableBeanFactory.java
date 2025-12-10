@@ -1,6 +1,6 @@
 package spring.bean.bean;
 
-import spring.bean.def.BeanDefinition;
+import spring.bean.beandefinition.BeanDefinition;
 
 public interface ConfigurableBeanFactory extends BeanFactory {
     void registerBeanDefinition(String beanName, BeanDefinition beanDefinition);

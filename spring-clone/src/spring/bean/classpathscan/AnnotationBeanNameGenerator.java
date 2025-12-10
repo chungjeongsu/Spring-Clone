@@ -1,8 +1,8 @@
-package spring.bean.def.scan;
+package spring.bean.classpathscan;
 
-import spring.bean.def.BeanDefinition;
-import spring.bean.def.BeanDefinitionRegistry;
-import spring.bean.def.scan.exception.BeanNameDuplicateException;
+import spring.bean.beandefinition.BeanDefinition;
+import spring.bean.context.BeanDefinitionRegistry;
+import spring.bean.classpathscan.exception.BeanNameDuplicateException;
 
 public class AnnotationBeanNameGenerator {
     public String generateBeanName(BeanDefinition beanDefinition, BeanDefinitionRegistry beanDefinitionRegistry) {

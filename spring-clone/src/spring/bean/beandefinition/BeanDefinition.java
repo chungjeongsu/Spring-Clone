@@ -1,4 +1,4 @@
-package spring.bean.def;
+package spring.bean.beandefinition;
 
 import spring.annotation.Scope.ScopeType;
 

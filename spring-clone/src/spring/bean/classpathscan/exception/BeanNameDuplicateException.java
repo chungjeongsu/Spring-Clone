@@ -1,4 +1,4 @@
-package spring.bean.def.scan.exception;
+package spring.bean.classpathscan.exception;
 
 public class BeanNameDuplicateException extends RuntimeException {
     public BeanNameDuplicateException(String message) {

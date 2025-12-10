@@ -1,8 +1,9 @@
-package spring.bean.def;
+package spring.bean.context;
 
 import spring.bean.bean.DefaultBeanFactory;
+import spring.bean.beandefinition.BeanDefinition;
 
-public class GenericBeanDefinitionRegistry implements BeanDefinitionRegistry{
+public class GenericBeanDefinitionRegistry implements BeanDefinitionRegistry {
     private final DefaultBeanFactory defaultBeanFactory;
 
     public GenericBeanDefinitionRegistry(DefaultBeanFactory defaultBeanFactory) {

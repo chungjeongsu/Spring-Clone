@@ -1,4 +1,4 @@
-package spring.bean.def.scan.exception;
+package spring.bean.classpathscan.exception;
 
 public class AnnotationAccessException extends RuntimeException {
     public AnnotationAccessException(String message, Throwable e) {

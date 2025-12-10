@@ -1,7 +1,7 @@
-package spring.bean.def.scan;
+package spring.bean.classpathscan;
 
-import spring.bean.def.BeanDefinition;
-import spring.bean.def.GenericBeanDefinitionRegistry;
+import spring.bean.beandefinition.BeanDefinition;
+import spring.bean.context.GenericBeanDefinitionRegistry;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,7 +9,7 @@ import java.net.*;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import spring.bean.def.scan.exception.BeanDefinitionScanException;
+import spring.bean.classpathscan.exception.BeanDefinitionScanException;
 
 public class ClassPathBeanDefinitionScanner {
     private final GenericBeanDefinitionRegistry genericBeanDefinitionRegistry;

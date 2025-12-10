@@ -1,11 +1,11 @@
-package spring.bean.def.scan;
+package spring.bean.classpathscan;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import spring.bean.def.MergedAnnotation;
-import spring.bean.def.MergedAnnotations;
+import spring.bean.beandefinition.MergedAnnotation;
+import spring.bean.beandefinition.MergedAnnotations;
 
 public class AnnotationUtil {
     public static MergedAnnotations parseMergedAnnotations(Class<?> clazz) {

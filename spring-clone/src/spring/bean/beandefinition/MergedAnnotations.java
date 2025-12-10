@@ -1,9 +1,7 @@
-package spring.bean.def;
+package spring.bean.beandefinition;
 
-import spring.bean.def.scan.exception.AnnotationAccessException;
+import spring.bean.classpathscan.exception.AnnotationAccessException;
 
-import java.lang.annotation.Annotation;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class MergedAnnotations {

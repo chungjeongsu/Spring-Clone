@@ -1,6 +1,6 @@
-package spring.bean.def.scan;
+package spring.bean.classpathscan;
 
-import spring.bean.def.*;
+import spring.bean.beandefinition.*;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;

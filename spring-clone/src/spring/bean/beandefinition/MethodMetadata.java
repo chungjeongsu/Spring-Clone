@@ -1,4 +1,4 @@
-package spring.bean.def;
+package spring.bean.beandefinition;
 
 public class MethodMetadata {
     private final String methodName;

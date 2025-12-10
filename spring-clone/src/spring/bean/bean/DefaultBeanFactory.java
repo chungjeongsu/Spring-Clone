@@ -3,7 +3,7 @@ package spring.bean.bean;
 import java.lang.reflect.InvocationTargetException;
 
 import spring.annotation.Autowired;
-import spring.bean.def.BeanDefinition;
+import spring.bean.beandefinition.BeanDefinition;
 
 import java.lang.reflect.Constructor;
 import java.util.*;
