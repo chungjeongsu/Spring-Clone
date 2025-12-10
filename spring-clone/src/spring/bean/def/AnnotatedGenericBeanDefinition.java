@@ -5,12 +5,12 @@ import spring.bean.scope.Scope;
 public class AnnotatedGenericBeanDefinition implements BeanDefinition {
     private String beanName;
     private Class<?> beanClass;
-    private Scope scope;
+    private AnnotationMetadata annotationMetadata;
 
-    public AnnotatedGenericBeanDefinition(String beanName, Class<?> beanClass, Scope scope) {
+    public AnnotatedGenericBeanDefinition(String beanName, Class<?> beanClass, AnnotationMetadata annotationMetadata) {
         this.beanName = beanName;
         this.beanClass = beanClass;
-        this.scope = scope;
+        this.annotationMetadata = annotationMetadata;
     }
 
     @Override
@@ -25,7 +25,7 @@ public class AnnotatedGenericBeanDefinition implements BeanDefinition {
 
     @Override
     public Scope getScope() {
-        return scope;
+        return annotationMetadata.getScope();
     }
 
     @Override
