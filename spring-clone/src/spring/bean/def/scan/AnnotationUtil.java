@@ -9,32 +9,26 @@ import spring.bean.def.MergedAnnotations;
 
 public class AnnotationUtil {
     public static MergedAnnotations parseMergedAnnotations(Class<?> clazz) {
-        Map<String, Class<? extends MergedAnnotation>> mergedAnnotations = new LinkedHashMap<>();
-
-        return parseAnnotation(clazz.getDeclaredAnnotations(), mergedAnnotations);
+        Map<String, MergedAnnotation> mergedAnnotations = new LinkedHashMap<>();
+        parseAnnotation(clazz.getDeclaredAnnotations(), mergedAnnotations);
+        return new MergedAnnotations(mergedAnnotations);
     }
 
     public static MergedAnnotations parseMergedAnnotations(Method method) {
-        Map<String, Class<? extends MergedAnnotation>> mergedAnnotations = new LinkedHashMap<>();
-
-        return parseAnnotation(method.getDeclaredAnnotations(), mergedAnnotations);
+        Map<String, MergedAnnotation> mergedAnnotations = new LinkedHashMap<>();
+        parseAnnotation(method.getDeclaredAnnotations(), mergedAnnotations);
+        return new MergedAnnotations(mergedAnnotations);
     }
 
-    private static void parseAnnotation(Annotation[] declaredAnnotations,
-        Map<String, Class<? extends MergedAnnotation>> mergedAnnotations) {
+    private static void parseAnnotation(Annotation[] declaredAnnotations, Map<String, MergedAnnotation> mergedAnnotations) {
         for(Annotation annotation : declaredAnnotations) {
             Class<? extends Annotation> annotationClass = annotation.annotationType();
 
-            if(isJavaLangAnnotation(annotationClass)) continue;
+            if(isJavaLangAnnotation(annotationClass) || mergedAnnotations.containsKey(annotationClass.getName())) continue;
 
-
-            mergedAnnotations.put(annotationClass.getName(), parseMergedAnnotation(annotationClass));
+            mergedAnnotations.put(annotationClass.getName(), new MergedAnnotation(annotationClass));
+            parseAnnotation(annotationClass.getDeclaredAnnotations(), mergedAnnotations);
         }
-    }
-
-    private static Class<? extends MergedAnnotation> parseMergedAnnotation(
-        Class<? extends Annotation> annotationClass) {
-        return null;
     }
 
     private static boolean isJavaLangAnnotation(Class<? extends Annotation> annotationClass) {

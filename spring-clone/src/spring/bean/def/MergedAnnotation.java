@@ -1,20 +1,33 @@
 package spring.bean.def;
 
+import spring.bean.def.scan.exception.AnnotationAccessException;
+
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class MergedAnnotation {
-    private final Annotation annotation;
+    private final Class<? extends Annotation> annotationClass;
 
-    public MergedAnnotation(Annotation annotation) {
-        this.annotation = annotation;
+    public MergedAnnotation(Class<? extends Annotation> annotationClass) {
+        this.annotationClass = annotationClass;
     }
 
     public <T> T getAttributeValue(String attributeName, Class<T> valueType) {
-        Class<? extends Annotation> aClass = annotation.annotationType();
-        Method method = aClass.getDeclaredMethod(attributeName);
-        Object value = method.invoke(annotation);
-        if(!valueType.isInstance(value)) throw new IllegalArgumentException();
-        return valueType.cast(value);
+        try {
+            Method method = annotationClass.getDeclaredMethod(attributeName);
+            Object value = method.invoke(annotationClass);
+
+            if(!valueType.isInstance(value)) throw new IllegalArgumentException();
+
+            return valueType.cast(value);
+        } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
+            throw new AnnotationAccessException(
+                    "Annotation Attribute 접근 예외 발생했습니다. Annotation = "
+                            + annotationClass.getName()
+                    + "attribute = "
+                            + attributeName
+            );
+        }
     }
 }
