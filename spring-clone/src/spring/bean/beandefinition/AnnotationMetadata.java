@@ -33,8 +33,8 @@ public class AnnotationMetadata {
         return Collections.unmodifiableSet(declaredMethods);
     }
 
-    public boolean hasAnnotation(String annotationName) {
-        return mergedAnnotations.hasAnnotation(annotationName);
+    public boolean hasAnnotation(Class<?> annotationClass) {
+        return mergedAnnotations.hasAnnotation(annotationClass.getName());
     }
 
     public ScopeType getScopeType() {

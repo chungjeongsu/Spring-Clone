@@ -90,7 +90,7 @@ public class ClassPathBeanDefinitionScanner {
                     String subPackage = currPackage + "." + child.getName();
                     doScanFile(child.toURI(), subPackage, beanDefinitions);
                     continue;
-                }
+            }
 
             if(!child.getName().endsWith(".class") || child.getName().contains("$")) continue;
 

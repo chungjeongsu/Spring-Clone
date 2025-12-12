@@ -1,5 +1,7 @@
 package spring.bean.classpathscan;
 
+import spring.annotation.Component;
+import spring.annotation.Configuration;
 import spring.bean.beandefinition.*;
 
 import java.lang.reflect.Method;
@@ -9,11 +11,15 @@ import java.util.stream.Collectors;
 import spring.annotation.Scope.ScopeType;
 
 public class BeanDefinitionParser {
+
     public BeanDefinition parse(Class<?> clazz) {
+        AnnotationMetadata annotationMetadata = parseAnnotationMetadata(clazz);
+        if(hasBeanAnnotation(annotationMetadata)) return null;
+
         return new AnnotatedGenericBeanDefinition(
             null,
                 clazz,
-                parseAnnotationMetadata(clazz)
+                annotationMetadata
         );
     }
 
@@ -71,5 +77,10 @@ public class BeanDefinitionParser {
         if(target instanceof Class<?>) return AnnotationUtil.parseMergedAnnotations((Class<?>) target);
         if(target instanceof Method) return AnnotationUtil.parseMergedAnnotations((Method) target);
         throw new IllegalArgumentException();
+    }
+
+    private boolean hasBeanAnnotation(AnnotationMetadata annotationMetadata) {
+        return annotationMetadata.hasAnnotation(Component.class)
+                || annotationMetadata.hasAnnotation(Configuration.class);
     }
 }

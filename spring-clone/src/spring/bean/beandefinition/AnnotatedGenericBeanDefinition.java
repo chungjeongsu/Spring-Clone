@@ -31,7 +31,7 @@ public class AnnotatedGenericBeanDefinition implements BeanDefinition {
     @Override
     public void setBeanName(String beanName) {
         if(this.beanName != null) {
-            throw new IllegalArgumentException("");
+            throw new IllegalArgumentException("bean 이름이 이미 있습니다. beanName = " + beanName);
         }
         this.beanName = beanName;
     }
