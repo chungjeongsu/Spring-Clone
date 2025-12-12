@@ -1,16 +1,16 @@
 package spring.bean.beandefinition;
 
 import spring.annotation.Bean;
-import spring.annotation.Scope.ScopeType;
+import spring.annotation.Scope;
 
 import java.util.Set;
 
-public class AnnotatedGenericBeanDefinition implements BeanDefinition {
+public class ConfigurationBeanDefinition implements BeanDefinition {
     private String beanName;
     private Class<?> beanClass;
     private AnnotationMetadata annotationMetadata;
 
-    public AnnotatedGenericBeanDefinition(String beanName, Class<?> beanClass, AnnotationMetadata annotationMetadata) {
+    public ConfigurationBeanDefinition(String beanName, Class<?> beanClass, AnnotationMetadata annotationMetadata) {
         this.beanName = beanName;
         this.beanClass = beanClass;
         this.annotationMetadata = annotationMetadata;
@@ -27,7 +27,7 @@ public class AnnotatedGenericBeanDefinition implements BeanDefinition {
     }
 
     @Override
-    public ScopeType getScopeType() {
+    public Scope.ScopeType getScopeType() {
         return annotationMetadata.getScopeType();
     }
 
