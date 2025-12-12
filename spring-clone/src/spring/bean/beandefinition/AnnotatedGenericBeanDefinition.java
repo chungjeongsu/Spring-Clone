@@ -1,6 +1,9 @@
 package spring.bean.beandefinition;
 
+import spring.annotation.Bean;
 import spring.annotation.Scope.ScopeType;
+
+import java.util.Set;
 
 public class AnnotatedGenericBeanDefinition implements BeanDefinition {
     private String beanName;
@@ -34,5 +37,13 @@ public class AnnotatedGenericBeanDefinition implements BeanDefinition {
             throw new IllegalArgumentException("bean 이름이 이미 있습니다. beanName = " + beanName);
         }
         this.beanName = beanName;
+    }
+
+    public boolean hasBeanAnnotation() {
+        return annotationMetadata.hasAnnotation(Bean.class);
+    }
+
+    public Set<MethodMetadata> getBeanMethodMetadata() {
+        return annotationMetadata.getBeanMethodMetadata();
     }
 }

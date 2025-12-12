@@ -2,6 +2,9 @@ package spring.bean.beandefinition;
 
 import java.util.Collections;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import spring.annotation.Bean;
 import spring.annotation.Scope.ScopeType;
 
 public class AnnotationMetadata {
@@ -31,6 +34,12 @@ public class AnnotationMetadata {
 
     public Set<MethodMetadata> getDeclaredMethods() {
         return Collections.unmodifiableSet(declaredMethods);
+    }
+
+    public Set<MethodMetadata> getBeanMethodMetadata() {
+        return declaredMethods.stream()
+                .filter(MethodMetadata::hasBeanAnnotation)
+                .collect(Collectors.toSet());
     }
 
     public boolean hasAnnotation(Class<?> annotationClass) {
