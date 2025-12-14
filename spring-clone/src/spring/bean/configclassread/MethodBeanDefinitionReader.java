@@ -9,7 +9,11 @@ import spring.bean.beanfactory.BeanDefinitionRegistry;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
+import spring.bean.configclassread.exception.ConfigurationBeanDefinitionClassException;
 
+/**
+ * ConfigurationBeanDefinition을 파라미터로 받아서, 내부 MethodBeanDefinition을 읽고 등록
+ */
 public class MethodBeanDefinitionReader {
     private final BeanDefinitionRegistry beanDefinitionRegistry;
 
@@ -17,9 +21,13 @@ public class MethodBeanDefinitionReader {
         this.beanDefinitionRegistry = beanDefinitionRegistry;
     }
 
-    public void loadBeanDefinition(Set<BeanDefinition> beanDefinitions) {
+    public void loadBeanDefinition(Set<BeanDefinition> configurationBeanDefinition) {
         Set<BeanDefinition> beanDefinitionsByMethod = new LinkedHashSet<>();
-        Set<BeanDefinition> candidates = findCandidatesByMethod(beanDefinitions, beanDefinitionsByMethod);
+
+        Set<BeanDefinition> candidates = findCandidatesByMethod(
+            configurationBeanDefinition, beanDefinitionsByMethod
+        );
+
         for(BeanDefinition beanDefinition : candidates) {
             if(beanDefinitionRegistry.containBeanDefinition(beanDefinition.getBeanName())) {
                 throw new BeanNameDuplicateException("중복된 빈 이름이 존재합니다. beanName = " + beanDefinition.getBeanName());
@@ -30,7 +38,12 @@ public class MethodBeanDefinitionReader {
 
     private Set<BeanDefinition> findCandidatesByMethod(Set<BeanDefinition> beanDefinitions, Set<BeanDefinition> beanDefinitionsByMethod) {
         for(BeanDefinition beanDefinition : beanDefinitions) {
-            ConfigurationBeanDefinition configBeanDefinition = (ConfigurationBeanDefinition) beanDefinition;
+
+            if(!(beanDefinition instanceof ConfigurationBeanDefinition configBeanDefinition))
+                throw new ConfigurationBeanDefinitionClassException(
+                    "해당 BeanDefinition은 ConfigurationBeanDefinition이 아닙니다. beanName= " + beanDefinition.getBeanName()
+                );
+
             readBeanDefinition(beanDefinition, configBeanDefinition.getBeanMethodMetadata(), beanDefinitionsByMethod);
         }
         return beanDefinitionsByMethod;
