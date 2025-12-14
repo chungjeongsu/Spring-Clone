@@ -1,7 +1,6 @@
 package spring.bean.classpathscan;
 
 import spring.bean.beandefinition.BeanDefinition;
-import spring.bean.context.GenericBeanDefinitionRegistry;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,17 +8,18 @@ import java.net.*;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import spring.bean.beanfactory.BeanDefinitionRegistry;
 import spring.bean.classpathscan.exception.BeanDefinitionScanException;
 
 public class ClassPathBeanDefinitionScanner {
-    private final GenericBeanDefinitionRegistry genericBeanDefinitionRegistry;
+    private final BeanDefinitionRegistry beanDefinitionRegistry;
     private final BeanDefinitionParser beanDefinitionParser;
     private final ClassLoader classLoader;
     private final AnnotationBeanNameGenerator annotationBeanNameGenerator;
 
-    public ClassPathBeanDefinitionScanner(GenericBeanDefinitionRegistry genericBeanDefinitionRegistry, BeanDefinitionParser beanDefinitionParser,
+    public ClassPathBeanDefinitionScanner(BeanDefinitionRegistry beanDefinitionRegistry, BeanDefinitionParser beanDefinitionParser,
         AnnotationBeanNameGenerator annotationBeanNameGenerator) {
-        this.genericBeanDefinitionRegistry = genericBeanDefinitionRegistry;
+        this.beanDefinitionRegistry = beanDefinitionRegistry;
         this.beanDefinitionParser = beanDefinitionParser;
         this.annotationBeanNameGenerator = annotationBeanNameGenerator;
         this.classLoader = Thread.currentThread().getContextClassLoader();
@@ -32,10 +32,10 @@ public class ClassPathBeanDefinitionScanner {
             Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
             for(BeanDefinition candidate : candidates) {
                 String beanName = annotationBeanNameGenerator.generateBeanName(candidate,
-                    genericBeanDefinitionRegistry);
+                    beanDefinitionRegistry);
                 candidate.setBeanName(beanName);
 
-                genericBeanDefinitionRegistry.registerBeanDefinition(beanName, candidate);
+                beanDefinitionRegistry.registerBeanDefinition(beanName, candidate);
             }
         }
         return beanDefinitions;

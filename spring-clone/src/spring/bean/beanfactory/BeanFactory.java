@@ -1,4 +1,4 @@
-package spring.bean.bean;
+package spring.bean.beanfactory;
 
 import java.lang.reflect.InvocationTargetException;
 

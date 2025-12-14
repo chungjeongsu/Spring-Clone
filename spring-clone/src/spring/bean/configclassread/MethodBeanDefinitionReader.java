@@ -5,7 +5,7 @@ import spring.bean.beandefinition.BeanDefinition;
 import spring.bean.beandefinition.MethodBeanDefinition;
 import spring.bean.beandefinition.MethodMetadata;
 import spring.bean.classpathscan.exception.BeanNameDuplicateException;
-import spring.bean.context.BeanDefinitionRegistry;
+import spring.bean.beanfactory.BeanDefinitionRegistry;
 
 import java.util.LinkedHashSet;
 import java.util.Set;

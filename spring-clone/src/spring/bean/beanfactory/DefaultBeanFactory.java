@@ -1,7 +1,8 @@
-package spring.bean.bean;
+package spring.bean.beanfactory;
 
 import java.lang.reflect.InvocationTargetException;
 
+import java.util.stream.Collectors;
 import spring.annotation.Autowired;
 import spring.bean.beandefinition.BeanDefinition;
 
@@ -9,14 +10,14 @@ import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class DefaultBeanFactory implements ConfigurableBeanFactory, SingletonBeanRegistry {
+public class DefaultBeanFactory implements BeanFactory, SingletonBeanRegistry,
+    BeanDefinitionRegistry {
     private final Map<String, BeanDefinition> beanDefinitions = new ConcurrentHashMap<>(256);
     private final Map<String, Object> singletonBeans = new ConcurrentHashMap<>(256);
     private final Set<String> singletonsCurrentlyCreation = ConcurrentHashMap.newKeySet(16);
 
     //-------------------------
-    //ConfigurableBeanFactory : 빈을 생성하기 위한 기본 설정
-    //- GenericApplicationContext -> ConfigurableBeanFactory 이렇게 이어짐
+    //BeanDefinitionRegistry 구현
     //-------------------------
     @Override
     public void registerBeanDefinition(String beanName, BeanDefinition beanDefinition) {
@@ -26,9 +27,8 @@ public class DefaultBeanFactory implements ConfigurableBeanFactory, SingletonBea
     }
 
     @Override
-    public void removeBeanDefinition(String beanName) {
-        if(beanName == null || beanName.isEmpty()) throw new IllegalArgumentException("beanName은 null일 수 없음");
-        beanDefinitions.remove(beanName);
+    public boolean containBeanDefinition(String beanName) {
+        return beanDefinitions.containsKey(beanName);
     }
 
     @Override
@@ -38,13 +38,19 @@ public class DefaultBeanFactory implements ConfigurableBeanFactory, SingletonBea
     }
 
     @Override
-    public boolean isBeanNameInUse(String beanName) {
-        if(beanName == null || beanName.isEmpty()) throw new IllegalArgumentException("beanName은 null일 수 없음");
-        return beanDefinitions.containsKey(beanName);
+    public Set<BeanDefinition> getBeanDefinitions() {
+        return getBeanDefinitions(Object.class);
+    }
+
+    @Override
+    public Set<BeanDefinition> getBeanDefinitions(Class<?> clazz) {
+        return beanDefinitions.values().stream()
+            .filter(clazz::isInstance)
+            .collect(Collectors.toSet());
     }
 
     //----------------------------
-    //BeanFactory : 기본적인 BeanFactory
+    //BeanFactory : 기본적인 BeanFactory 구현
     //----------------------------
     @Override
     public Object getBean(String name)
