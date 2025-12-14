@@ -1,13 +1,16 @@
 package spring.bean.beandefinition;
 
-import spring.annotation.Scope.ScopeType;
+import spring.annotation.Bean;
+import spring.annotation.Scope;
 
-public class AnnotatedGenericBeanDefinition implements BeanDefinition {
+import java.util.Set;
+
+public class ConfigurationBeanDefinition implements BeanDefinition {
     private String beanName;
     private Class<?> beanClass;
     private AnnotationMetadata annotationMetadata;
 
-    public AnnotatedGenericBeanDefinition(String beanName, Class<?> beanClass, AnnotationMetadata annotationMetadata) {
+    public ConfigurationBeanDefinition(String beanName, Class<?> beanClass, AnnotationMetadata annotationMetadata) {
         this.beanName = beanName;
         this.beanClass = beanClass;
         this.annotationMetadata = annotationMetadata;
@@ -24,7 +27,7 @@ public class AnnotatedGenericBeanDefinition implements BeanDefinition {
     }
 
     @Override
-    public ScopeType getScopeType() {
+    public Scope.ScopeType getScopeType() {
         return annotationMetadata.getScopeType();
     }
 
@@ -34,5 +37,13 @@ public class AnnotatedGenericBeanDefinition implements BeanDefinition {
             throw new IllegalArgumentException("bean 이름이 이미 있습니다. beanName = " + beanName);
         }
         this.beanName = beanName;
+    }
+
+    public boolean hasBeanAnnotation() {
+        return annotationMetadata.hasAnnotation(Bean.class);
+    }
+
+    public Set<MethodMetadata> getBeanMethodMetadata() {
+        return annotationMetadata.getBeanMethodMetadata();
     }
 }

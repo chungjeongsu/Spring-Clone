@@ -16,7 +16,7 @@ public class BeanDefinitionParser {
         AnnotationMetadata annotationMetadata = parseAnnotationMetadata(clazz);
         if(hasBeanAnnotation(annotationMetadata)) return null;
 
-        return new AnnotatedGenericBeanDefinition(
+        return new ConfigurationBeanDefinition(
             null,
                 clazz,
                 annotationMetadata

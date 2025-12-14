@@ -1,5 +1,7 @@
 package spring.bean.beandefinition;
 
+import spring.annotation.Bean;
+
 public class MethodMetadata {
     private final String methodName;
     private final Class<?> declaringClassName;
@@ -14,5 +16,19 @@ public class MethodMetadata {
         this.mergedAnnotations = mergedAnnotations;
     }
 
+    public String getMethodName() {
+        return methodName;
+    }
 
+    public Class<?> getDeclaringClassName() {
+        return declaringClassName;
+    }
+
+    public Class<?> getReturnType() {
+        return returnType;
+    }
+
+    public boolean hasBeanAnnotation() {
+        return mergedAnnotations.hasAnnotation("Bean");
+    }
 }
