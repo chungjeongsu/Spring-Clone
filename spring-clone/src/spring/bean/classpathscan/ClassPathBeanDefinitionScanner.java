@@ -25,9 +25,7 @@ public class ClassPathBeanDefinitionScanner {
         this.classLoader = Thread.currentThread().getContextClassLoader();
     }
 
-    public Map<String, BeanDefinition> scan(String... basePackages) {
-        Map<String, BeanDefinition> beanDefinitions = new LinkedHashMap<>();
-
+    public void scan(String... basePackages) {
         for(String basePackage : basePackages) {
             Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
             for(BeanDefinition candidate : candidates) {
@@ -38,7 +36,6 @@ public class ClassPathBeanDefinitionScanner {
                 beanDefinitionRegistry.registerBeanDefinition(beanName, candidate);
             }
         }
-        return beanDefinitions;
     }
 
     //Scan을 위한 기본 세팅

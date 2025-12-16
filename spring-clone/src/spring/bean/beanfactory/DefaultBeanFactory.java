@@ -156,7 +156,7 @@ public class DefaultBeanFactory implements BeanFactory, SingletonBeanRegistry,
                 .filter(c -> c.isAnnotationPresent(Autowired.class))
                 .toList();
         if(autowiredConstructors.size() > 1) throw new IllegalArgumentException();
-        if(autowiredConstructors.size() == 1) autowirableConstructor = autowiredConstructors.getFirst();
+        if(autowiredConstructors.size() == 1) autowirableConstructor = autowiredConstructors.get(0);
     }
 
     private void beforeSingletonCreation(String beanName) {

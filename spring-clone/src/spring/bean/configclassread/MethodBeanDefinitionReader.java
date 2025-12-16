@@ -2,8 +2,6 @@ package spring.bean.configclassread;
 
 import spring.bean.beandefinition.ConfigurationBeanDefinition;
 import spring.bean.beandefinition.BeanDefinition;
-import spring.bean.beandefinition.MethodBeanDefinition;
-import spring.bean.beandefinition.MethodMetadata;
 import spring.bean.classpathscan.exception.BeanNameDuplicateException;
 import spring.bean.beanfactory.BeanDefinitionRegistry;
 
