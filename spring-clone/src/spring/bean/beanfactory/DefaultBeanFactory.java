@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.stream.Collectors;
 import spring.annotation.Autowired;
 import spring.bean.beandefinition.BeanDefinition;
+import spring.bean.bpp.BeanPostProcessor;
 
 import java.lang.reflect.Constructor;
 import java.util.*;
@@ -15,6 +16,8 @@ public class DefaultBeanFactory implements BeanFactory, SingletonBeanRegistry,
     private final Map<String, BeanDefinition> beanDefinitions = new ConcurrentHashMap<>(256);
     private final Map<String, Object> singletonBeans = new ConcurrentHashMap<>(256);
     private final Set<String> singletonsCurrentlyCreation = ConcurrentHashMap.newKeySet(16);
+
+    private final List<BeanPostProcessor> beanPostProcessors = new ArrayList<>();
 
     //-------------------------
     //BeanDefinitionRegistry 구현
@@ -27,7 +30,7 @@ public class DefaultBeanFactory implements BeanFactory, SingletonBeanRegistry,
     }
 
     @Override
-    public boolean containBeanDefinition(String beanName) {
+    public boolean containsBeanDefinition(String beanName) {
         return beanDefinitions.containsKey(beanName);
     }
 

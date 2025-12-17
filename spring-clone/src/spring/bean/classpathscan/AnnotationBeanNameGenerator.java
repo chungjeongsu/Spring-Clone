@@ -9,7 +9,7 @@ public class AnnotationBeanNameGenerator {
         Class<?> beanClass = beanDefinition.getBeanClass();
         String beanName = beanClass.getName();
 
-        if(beanDefinitionRegistry.containBeanDefinition(beanName)) {
+        if(beanDefinitionRegistry.containsBeanDefinition(beanName)) {
             throw new BeanNameDuplicateException("중복된 빈 이름이 존재합니다. beanName = " + beanName);
         }
 

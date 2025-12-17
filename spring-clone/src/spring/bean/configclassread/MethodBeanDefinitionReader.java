@@ -20,43 +20,6 @@ public class MethodBeanDefinitionReader {
     }
 
     public void loadBeanDefinition(Set<BeanDefinition> configurationBeanDefinition) {
-        Set<BeanDefinition> beanDefinitionsByMethod = new LinkedHashSet<>();
 
-        Set<BeanDefinition> candidates = findCandidatesByMethod(
-            configurationBeanDefinition, beanDefinitionsByMethod
-        );
-
-        for(BeanDefinition beanDefinition : candidates) {
-            if(beanDefinitionRegistry.containBeanDefinition(beanDefinition.getBeanName())) {
-                throw new BeanNameDuplicateException("중복된 빈 이름이 존재합니다. beanName = " + beanDefinition.getBeanName());
-            }
-            beanDefinitionRegistry.registerBeanDefinition(beanDefinition.getBeanName(), beanDefinition);
-        }
-    }
-
-    private Set<BeanDefinition> findCandidatesByMethod(Set<BeanDefinition> beanDefinitions, Set<BeanDefinition> beanDefinitionsByMethod) {
-        for(BeanDefinition beanDefinition : beanDefinitions) {
-
-            if(!(beanDefinition instanceof ConfigurationBeanDefinition configBeanDefinition))
-                throw new ConfigurationBeanDefinitionClassException(
-                    "해당 BeanDefinition은 ConfigurationBeanDefinition이 아닙니다. beanName= " + beanDefinition.getBeanName()
-                );
-
-            readBeanDefinition(beanDefinition, configBeanDefinition.getBeanMethodMetadata(), beanDefinitionsByMethod);
-        }
-        return beanDefinitionsByMethod;
-    }
-
-    private void readBeanDefinition(BeanDefinition beanDefinition, Set<MethodMetadata> beanMethodMetadata, Set<BeanDefinition> beanDefinitionsByMethod) {
-        for(MethodMetadata methodMetadata : beanMethodMetadata) {
-            MethodBeanDefinition methodBeanDefinition = new MethodBeanDefinition(
-                    methodMetadata.getMethodName(),
-                    beanDefinition.getBeanName(),
-                    methodMetadata.getMethodName(),
-                    methodMetadata.getReturnType(),
-                    beanDefinition.getScopeType()
-            );
-            beanDefinitionsByMethod.add(methodBeanDefinition);
-        }
     }
 }

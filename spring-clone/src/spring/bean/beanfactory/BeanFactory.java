@@ -1,5 +1,7 @@
 package spring.bean.beanfactory;
 
+import spring.bean.bpp.BeanPostProcessor;
+
 import java.lang.reflect.InvocationTargetException;
 
 public interface BeanFactory {
@@ -17,4 +19,6 @@ public interface BeanFactory {
     boolean isSingleton(String name);
 
     boolean isPrototype(String name);
+
+    void addBeanPostProcessor(BeanPostProcessor bpp);
 }
