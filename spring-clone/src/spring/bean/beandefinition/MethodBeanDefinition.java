@@ -1,5 +1,9 @@
 package spring.bean.beandefinition;
 
+/**
+ * MethodBeanDefinition은 @Bean을 통해 만들어지는 Bean들의 정의이다.
+ * 부모 클래스(@Configuration)의 메서드를 invoke하면서 Bean이 생성된다.
+ */
 public class MethodBeanDefinition implements BeanDefinition {
     private String beanName;
     private Class<?> beanClass;

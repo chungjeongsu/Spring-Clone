@@ -2,6 +2,7 @@ package spring.bean.context;
 
 import spring.bean.bdrpp.BeanDefinitionRegistryPostProcessor;
 import spring.bean.beandefinition.BeanDefinition;
+import spring.bean.beandefinition.ConfigurationBeanDefinition;
 import spring.bean.beanfactory.DefaultBeanFactory;
 import spring.bean.bfpp.BeanFactoryPostProcessor;
 import spring.bean.bpp.BeanPostProcessor;
@@ -9,11 +10,23 @@ import spring.bean.util.AnnotationConfigUtil;
 
 import java.util.Set;
 
+/**
+ * Bean Definition부터 Bean 생성까지 파이프라인을 담당하는 클래스
+ * 생성 : defaultBeanFactory를 생성하고, 초기 SpringCloneApplication의 BeanDefinition만 담아둔다.
+ * 1. prepareRefresh():
+ * 2. registerInfrastructureProcessors(): BDRPP, BFPP, BPP를 beanDefinition으로 등록한다.
+ * 3. invokeBeanFactoryPostProcessors(): 등록된 BDRPP, BFPP를 차례대로 수행.
+ * 4. registerBeanPostProcessors(): BPP를 빈으로 생성 후 BeanFactory에 장착
+ * 5. finishBeanFactoryInitialization(): 빈생성 파이프라인 수행
+ */
 public class DIApplicationContext {
     private final DefaultBeanFactory defaultBeanFactory;
 
-    public DIApplicationContext(DefaultBeanFactory defaultBeanFactory) {
-        this.defaultBeanFactory = defaultBeanFactory;
+    public DIApplicationContext(Class<?> primarySource) {
+        this.defaultBeanFactory = new DefaultBeanFactory();
+        defaultBeanFactory.registerBeanDefinition(
+                primarySource.getName(),
+                new ConfigurationBeanDefinition(primarySource.getName(), primarySource));
     }
 
     public void refresh() {

@@ -15,22 +15,21 @@ public class ClassPathBeanDefinitionScanner {
     private final BeanDefinitionRegistry beanDefinitionRegistry;
     private final BeanDefinitionParser beanDefinitionParser;
     private final ClassLoader classLoader;
-    private final AnnotationBeanNameGenerator annotationBeanNameGenerator;
+    private final AnnotationBeanNameGenerator beanNameGenerator;
 
-    public ClassPathBeanDefinitionScanner(BeanDefinitionRegistry beanDefinitionRegistry, BeanDefinitionParser beanDefinitionParser,
-        AnnotationBeanNameGenerator annotationBeanNameGenerator) {
+    public ClassPathBeanDefinitionScanner(BeanDefinitionRegistry beanDefinitionRegistry) {
         this.beanDefinitionRegistry = beanDefinitionRegistry;
-        this.beanDefinitionParser = beanDefinitionParser;
-        this.annotationBeanNameGenerator = annotationBeanNameGenerator;
+        this.beanDefinitionParser = new BeanDefinitionParser();
+        this.beanNameGenerator = new AnnotationBeanNameGenerator();
         this.classLoader = Thread.currentThread().getContextClassLoader();
     }
 
-    public void scan(String... basePackages) {
+    public void scan(List<String> basePackages) {
         for(String basePackage : basePackages) {
             Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
+
             for(BeanDefinition candidate : candidates) {
-                String beanName = annotationBeanNameGenerator.generateBeanName(candidate,
-                    beanDefinitionRegistry);
+                String beanName = beanNameGenerator.generateBeanName(candidate, beanDefinitionRegistry);
                 candidate.setBeanName(beanName);
 
                 beanDefinitionRegistry.registerBeanDefinition(beanName, candidate);
