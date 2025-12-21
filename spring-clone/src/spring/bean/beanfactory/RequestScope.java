@@ -1,10 +1,19 @@
 package spring.bean.beanfactory;
 
-import java.util.function.Supplier;
-
-public class RequestScope implements Scope{
+public class RequestScope implements Scope {
     @Override
-    public <T> void get(String name, Supplier<T> createBean) {
+    public Object get(String name, ObjectFactory<?> createBean) {
+        //RequestAttributes attributes = RequestContextHolder.currentRequestAttributes();
+        //Object scopedObject = attributes.getAttribute(name, getScope());
+        //if(scopedObject == null) {
+        // scopedObject = objectFactory.getObject();
+        // attributes.setAttribute(name, scopedObject, getScope());
+        // Object retrievedObject = attributes.getAttribute(name,getScope());
+        // if(retrievedObject != null) {
+        //  scopedObject = retrievedObject;
+        // }
+        //}
 
+        return createBean.getObject();
     }
 }

@@ -13,7 +13,7 @@ import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class DefaultBeanFactory implements BeanFactory, SingletonBeanRegistry,
+public class DefaultBeanFactory implements BeanFactory, DefaultBeanRegistry,
     BeanDefinitionRegistry {
     private final ScopeRegistry scopeRegistry;
 
@@ -72,7 +72,7 @@ public class DefaultBeanFactory implements BeanFactory, SingletonBeanRegistry,
         BeanDefinition beanDefinition = beanDefinitions.get(name);
 
         if(beanDefinition.getScope().equals("default") ||beanDefinition.getScope().equals("singleton")) {
-            return createBean(name, beanDefinition);
+            return getSingletonBean(name, beanDefinition);
         }
 
         Scope scope = scopeRegistry.get(beanDefinition.getScope());
@@ -89,6 +89,16 @@ public class DefaultBeanFactory implements BeanFactory, SingletonBeanRegistry,
         return getBean(requiredType.getName(), requiredType);
     }
 
+    private Object getSingletonBean(String beanName, BeanDefinition beanDefinition) {
+        beforeSingletonCreation(beanName);
+
+        Object beanInstance = createBean(beanName, beanDefinition);
+
+        afterSingletonCreation(beanName);
+
+        return beanInstance;
+    }
+
     //--------------------------------
     //SingletonBeanFactory : getBean시 초기화 담당
     //--------------------------------
@@ -97,15 +107,11 @@ public class DefaultBeanFactory implements BeanFactory, SingletonBeanRegistry,
     @Override
     public Object createBean(String beanName, BeanDefinition beanDefinition) {
 
-        beforeSingletonCreation(beanName);
-
         Object beanInstance = createBeanInstance(beanDefinition);
 
         populateBean(beanName, beanDefinition, beanInstance);
 
         initializeBean(beanName, beanDefinition, beanInstance);
-
-        afterSingletonCreation(beanName);
 
         return beanInstance;
     }
