@@ -6,7 +6,9 @@ package spring.bean.beandefinition;
  */
 public class MethodBeanDefinition implements BeanDefinition {
     private String beanName;
-    private Class<?> beanClass;
+    private Class<?> factoryClass;
+    private String factoryMethod;
+    private Class<?> returnType;
 
     @Override
     public String getBeanName() {
@@ -21,5 +23,18 @@ public class MethodBeanDefinition implements BeanDefinition {
     @Override
     public void setBeanName(String beanName) {
 
+    }
+
+    @Override
+    public String getScope() {
+        return "";
+    }
+
+    public Class<?> getFactoryClass() {
+        return factoryClass;
+    }
+
+    public String getFactoryMethod() {
+        return factoryMethod;
     }
 }

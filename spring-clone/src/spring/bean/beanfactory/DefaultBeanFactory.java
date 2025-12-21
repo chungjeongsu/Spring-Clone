@@ -2,9 +2,11 @@ package spring.bean.beanfactory;
 
 import java.lang.reflect.InvocationTargetException;
 
+import java.lang.reflect.Method;
 import java.util.stream.Collectors;
 import spring.annotation.Autowired;
 import spring.bean.beandefinition.BeanDefinition;
+import spring.bean.beandefinition.MethodBeanDefinition;
 import spring.bean.bpp.BeanPostProcessor;
 
 import java.lang.reflect.Constructor;
@@ -13,11 +15,18 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultBeanFactory implements BeanFactory, SingletonBeanRegistry,
     BeanDefinitionRegistry {
+    private final ScopeRegistry scopeRegistry;
+
     private final Map<String, BeanDefinition> beanDefinitions = new ConcurrentHashMap<>(256);
     private final Map<String, Object> singletonBeans = new ConcurrentHashMap<>(256);
+    private final Map<String, ObjectFactory<?>> singletonFactories = new LinkedHashMap<>();
     private final Set<String> singletonsCurrentlyCreation = ConcurrentHashMap.newKeySet(16);
 
     private final List<BeanPostProcessor> beanPostProcessors = new ArrayList<>();
+
+    public DefaultBeanFactory() {
+        this.scopeRegistry = new ScopeRegistry();
+    }
 
     //-------------------------
     //BeanDefinitionRegistry 구현
@@ -56,71 +65,103 @@ public class DefaultBeanFactory implements BeanFactory, SingletonBeanRegistry,
     //BeanFactory : 기본적인 BeanFactory 구현
     //----------------------------
     @Override
-    public Object getBean(String name)
-        throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    public Object getBean(String name) {
         if(singletonBeans.containsKey(name)) return singletonBeans.get(name);
         if(!beanDefinitions.containsKey(name)) throw new IllegalArgumentException();
-        return createBean(name, beanDefinitions.get(name));
+
+        BeanDefinition beanDefinition = beanDefinitions.get(name);
+
+        if(beanDefinition.getScope().equals("default") ||beanDefinition.getScope().equals("singleton")) {
+            return createBean(name, beanDefinition);
+        }
+
+        Scope scope = scopeRegistry.get(beanDefinition.getScope());
+        return scope.get(name, () -> createBean(name, beanDefinition));
     }
 
     @Override
-    public <T> T getBean(String name, Class<T> requiredType)
-        throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    public <T> T getBean(String name, Class<T> requiredType) {
         return requiredType.cast(getBean(name));
     }
 
     @Override
-    public <T> T getBean(Class<T> requiredType)
-        throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    public <T> T getBean(Class<T> requiredType) {
         return getBean(requiredType.getName(), requiredType);
     }
-
-    @Override
-    public boolean containsBean(String name) {
-        return this.singletonBeans.containsKey(name);
-    }
-
-    @Override
-    public boolean isSingleton(String name) {
-        return false;
-    }
-
-    @Override
-    public boolean isPrototype(String name) {
-        return false;
-    }
-
 
     //--------------------------------
     //SingletonBeanFactory : getBean시 초기화 담당
     //--------------------------------
     /**
-     * 1. 빈 객체 생성
-     * 2. 빈 채우기: 필드/세터/생성자 주입
-     * 3. 초기화 이전: aware 채우기
-     * 4. 초기화: @PostConsturct 존재 시 채우기
-     * 5. 초기화 이후 : AOP 프록시 생성, 스케쥴러 등록, ProxyWrapping
-     * 6. 최종 빈 return
      */
     @Override
-    public Object createBean(String beanName, BeanDefinition beanDefinition)
-        throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    public Object createBean(String beanName, BeanDefinition beanDefinition) {
+
         beforeSingletonCreation(beanName);
 
-        Class<?> objectClass = beanDefinition.getBeanClass();
-        if(containsBean(beanName)) throw new IllegalAccessException();
-        Object beanInstance = createBeanInstance(objectClass);
-        //Todo : 초기화 이전 ~ 초기화 이후 로직 일단 기본 빈 생성까지만 구현 후 리팩토링 하며 추가 예정
+        Object beanInstance = createBeanInstance(beanDefinition);
+
+        populateBean(beanName, beanDefinition, beanInstance);
+
+        initializeBean(beanName, beanDefinition, beanInstance);
 
         afterSingletonCreation(beanName);
+
         return beanInstance;
     }
 
-    private Object createBeanInstance(Class<?> objectClass)
-        throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        Constructor<?> autowirableConstructor = selectAutowirableConstructor(objectClass.getDeclaredConstructors());
-        Object[] parameterValues = resolveParameterValues(autowirableConstructor);
-        return autowirableConstructor.newInstance(parameterValues);
+    private void beforeSingletonCreation(String beanName) {
+        if(!this.singletonsCurrentlyCreation.contains(beanName)) {
+            singletonsCurrentlyCreation.add(beanName);
+            return;
+        }
+        throw new IllegalArgumentException();
+    }
+
+    private Object createBeanInstance(BeanDefinition beanDefinition) {
+        if(beanDefinition instanceof MethodBeanDefinition methodBeanDefinition) {
+            return createMethodBeanInstance(methodBeanDefinition);
+        }
+        return createClassBeanInstance(beanDefinition);
+    }
+
+    private void populateBean(String beanName, BeanDefinition beanDefinition, Object beanInstance) {
+
+    }
+
+    private void initializeBean(String beanName, BeanDefinition beanDefinition, Object beanInstance) {
+
+    }
+
+    private void afterSingletonCreation(String beanName) {
+        if(this.singletonsCurrentlyCreation.contains(beanName)) {
+            singletonsCurrentlyCreation.remove(beanName);
+            return;
+        }
+        throw new IllegalArgumentException();
+    }
+
+    private Object createMethodBeanInstance(MethodBeanDefinition methodBeanDefinition){
+        Class<?> factoryClass = methodBeanDefinition.getFactoryClass();
+        try{
+            Object factoryBean = getBean(factoryClass);
+            Method factoryMethod = factoryClass.getDeclaredMethod(methodBeanDefinition.getFactoryMethod());
+            return factoryMethod.invoke(factoryBean);
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Object createClassBeanInstance(BeanDefinition beanDefinition) {
+        Class<?> beanClass = beanDefinition.getBeanClass();
+        Constructor<?> autowirableConstructor = selectAutowirableConstructor(beanClass.getDeclaredConstructors());
+        Object[] parameterValues = null;
+        try {
+            parameterValues = resolveParameterValues(autowirableConstructor);
+            return autowirableConstructor.newInstance(parameterValues);
+        } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private Object[] resolveParameterValues(Constructor<?> autowirableConstructor)
@@ -160,21 +201,5 @@ public class DefaultBeanFactory implements BeanFactory, SingletonBeanRegistry,
                 .toList();
         if(autowiredConstructors.size() > 1) throw new IllegalArgumentException();
         if(autowiredConstructors.size() == 1) autowirableConstructor = autowiredConstructors.get(0);
-    }
-
-    private void beforeSingletonCreation(String beanName) {
-        if(!this.singletonsCurrentlyCreation.contains(beanName)) {
-            singletonsCurrentlyCreation.add(beanName);
-            return;
-        }
-        throw new IllegalArgumentException();
-    }
-
-    private void afterSingletonCreation(String beanName) {
-        if(this.singletonsCurrentlyCreation.contains(beanName)) {
-            singletonsCurrentlyCreation.remove(beanName);
-            return;
-        }
-        throw new IllegalArgumentException();
     }
 }

@@ -8,12 +8,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Scope {
-    ScopeType value() default ScopeType.DEFAULT;
-
-    enum ScopeType {
-        DEFAULT,
-        PROTOTYPE,
-        REQUEST,
-        SESSION
-    }
+    String value() default "singleton";
 }

@@ -14,11 +14,5 @@ public interface BeanFactory {
     <T> T getBean(Class<T> requiredType)
         throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException;
 
-    boolean containsBean(String name);
-
-    boolean isSingleton(String name);
-
-    boolean isPrototype(String name);
-
     void addBeanPostProcessor(BeanPostProcessor bpp);
 }
